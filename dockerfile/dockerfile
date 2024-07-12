@@ -1,0 +1,19 @@
+FROM ubuntu:20.04
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y ncbi-blast+ git libglpk-dev r-base-core exonerate bedtools barrnap bc parallel libcurl4-openssl-dev libssl-dev locales locales-all wget curl
+RUN R -e 'install.packages(c("data.table", "stringr", "sybil", "getopt", "doParallel", "foreach", "R.utils", "stringi", "glpkAPI", "CHNOSZ", "jsonlite", "httr"))'
+RUN wget https://cran.r-project.org/src/contrib/Archive/sybil/sybil_2.2.0.tar.gz
+RUN wget https://cran.r-project.org/src/contrib/Archive/sybilSBML/sybilSBML_3.1.2.tar.gz
+RUN R CMD INSTALL sybil_2.2.0.tar.gz
+RUN apt-get install -y libsbml5-dev
+RUN R CMD INSTALL sybilSBML_3.1.2.tar.gz
+RUN git clone https://github.com/jotech/gapseq 
+RUN bash ./gapseq/src/update_sequences.sh
+RUN apt-get install -y gawk
+RUN R -e 'install.packages("BiocManager")'
+RUN R -e "write('TMP = \'/data\'', file=file.path(Sys.getenv('R_USER'), '.Renviron'))"
+RUN R -e 'install.packages("data.table",type="source")'
+RUN R -e 'install.packages("httr")'
+RUN R -e 'install.packages("stringr",type="source")'
+RUN R -e 'BiocManager::install("Biostrings",force = TRUE,versions = "2.54.0",type="source")'
+ENV PATH="./gapseq/:${PATH}"
